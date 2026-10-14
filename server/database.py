@@ -65,3 +65,22 @@ def add_points(points: int, reason: str):
     
     conn.close()
     return new_balance
+
+def reset_database():
+    """Полный сброс: очищает таблицы user_balance и transactions и возвращает баланс к 0"""
+    conn = sqlite3.connect(DB_NAME)  # Используем правильную константу "server/cuteness.db"
+    cursor = conn.cursor()
+    
+    # Очищаем содержимое таблиц
+    cursor.execute("DELETE FROM user_balance;")
+    cursor.execute("DELETE FROM transactions;")
+    
+    # Сбрасываем автоинкремент (чтобы id начинались с 1)
+    cursor.execute("DELETE FROM sqlite_sequence WHERE name='user_balance';")
+    cursor.execute("DELETE FROM sqlite_sequence WHERE name='transactions';")
+    
+    # Создаем начальную запись с 0 очками
+    cursor.execute("INSERT INTO user_balance (balance) VALUES (0)")
+        
+    conn.commit()
+    conn.close()

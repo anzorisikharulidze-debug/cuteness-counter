@@ -20,7 +20,8 @@ export class AppRoot extends LitElement {
 
   async fetchState() {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/state');
+      const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+      const response = await fetch(`${API_URL}/api/state`);
       const data = await response.json();
       this.balance = data.balance; // Обновляем баланс данными из бэкенда
     } catch (error) {
@@ -65,6 +66,27 @@ export class AppRoot extends LitElement {
       font-size: 32px;
       font-weight: 300;
       letter-spacing: 2px;
+
+      overflow: hidden;
+      display: inline-block;
+      height: 40px;
+      line-height: 40px;
+    }
+
+    @keyframes rollUp {
+      0% {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .rolling-digit {
+      display: inline-block;
+      animation: rollUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .counter-label {
@@ -107,7 +129,9 @@ export class AppRoot extends LitElement {
 
           <div class="content-footer">
           <div class="counter-label">Очки милоты</div>
-            <div class="counter-value">${this.balance}</div>
+            <div class="counter-value">
+              <span class="rolling-digit" .key="${this.balance}">${this.balance}</span>
+            </div>
           </div>
 
         </cuteness-card>
