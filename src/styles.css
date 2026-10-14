@@ -1,0 +1,21 @@
+:root {
+  --bg-color: #0d0406;
+  --text-color: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100dvh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  overflow: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
