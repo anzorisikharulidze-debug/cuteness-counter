@@ -93,13 +93,13 @@ export class CutenessHeart extends LitElement {
 
     // --- Материал ---
     const material = new THREE.MeshPhysicalMaterial({
-      color: 0x3d0710,
-      emissive: 0x140205,
+      color: 0xb51010,
+      emissive: 0x4a0018,
       metalness: 0.1,
       roughness: 0.35,
       transmission: 0.2,
       thickness: 2.0,
-      transparent: true,
+      transparent: false,
       opacity: 0.98,
       ior: 1.4
     });
