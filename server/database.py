@@ -1,23 +1,36 @@
-import sqlite3
+import os
+import psycopg2
+from dotenv import load_dotenv
 
-DB_NAME = "server/cuteness.db"
+# Загружаем переменные из локального .env файла (если он есть)
+load_dotenv()
+
+# Берем строку подключения из окружения. 
+# Если её нет, для подстраховки можно оставить заглушку или падать с ошибкой
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+def get_connection():
+    """Создает и возвращает подключение к PostgreSQL (Supabase)"""
+    if not DATABASE_URL:
+        raise ValueError("Переменная окружения DATABASE_URL не задана!")
+    return psycopg2.connect(DATABASE_URL)
 
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
     
-    # Таблица для текущего баланса очков
+    # Таблица для текущего баланса очков (SERIAL вместо INTEGER PRIMARY KEY AUTOINCREMENT)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS user_balance (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             balance INTEGER NOT NULL DEFAULT 0
         )
     """)
     
-    # Таблица для истории начислений (очки, причина/аргумент, дата)
+    # Таблица для истории начислений
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             points INTEGER NOT NULL,
             reason TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -30,57 +43,57 @@ def init_db():
         cursor.execute("INSERT INTO user_balance (balance) VALUES (0)")
         
     conn.commit()
+    cursor.close()
     conn.close()
 
 def get_current_state():
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
     
     cursor.execute("SELECT balance FROM user_balance WHERE id = 1")
-    balance = cursor.fetchone()[0]
+    row = cursor.fetchone()
+    balance = row[0] if row else 0
     
     cursor.execute("SELECT points, reason, created_at FROM transactions ORDER BY created_at DESC LIMIT 10")
     history = [
-        {"points": row[0], "reason": row[1], "created_at": row[2]} 
-        for row in cursor.fetchall()
+        {"points": r[0], "reason": r[1], "created_at": r[2].isoformat() if r[2] else None} 
+        for r in cursor.fetchall()
     ]
     
+    cursor.close()
     conn.close()
     return {"balance": balance, "history": history}
 
 def add_points(points: int, reason: str):
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
     
-    # Обновляем счетчик
-    cursor.execute("UPDATE user_balance SET balance = balance + ? WHERE id = 1", (points,))
+    # Обновляем счетчик (%s вместо ?)
+    cursor.execute("UPDATE user_balance SET balance = balance + %s WHERE id = 1", (points,))
     
-    # Записываем историю
-    cursor.execute("INSERT INTO transactions (points, reason) VALUES (?, ?)", (points, reason))
+    # Записываем историю (%s вместо ?)
+    cursor.execute("INSERT INTO transactions (points, reason) VALUES (%s, %s)", (points, reason))
     
     conn.commit()
     
     cursor.execute("SELECT balance FROM user_balance WHERE id = 1")
     new_balance = cursor.fetchone()[0]
     
+    cursor.close()
     conn.close()
     return new_balance
 
 def reset_database():
-    """Полный сброс: очищает таблицы user_balance и transactions и возвращает баланс к 0"""
-    conn = sqlite3.connect(DB_NAME)  # Используем правильную константу "server/cuteness.db"
+    """Полный сброс: очищает таблицы и сбрасывает счетчики в PostgreSQL"""
+    conn = get_connection()
     cursor = conn.cursor()
     
-    # Очищаем содержимое таблиц
-    cursor.execute("DELETE FROM user_balance;")
-    cursor.execute("DELETE FROM transactions;")
-    
-    # Сбрасываем автоинкремент (чтобы id начинались с 1)
-    cursor.execute("DELETE FROM sqlite_sequence WHERE name='user_balance';")
-    cursor.execute("DELETE FROM sqlite_sequence WHERE name='transactions';")
+    # Очищаем содержимое таблиц и сбрасываем автоинкремент (RESTART IDENTITY)
+    cursor.execute("TRUNCATE TABLE user_balance, transactions RESTART IDENTITY CASCADE;")
     
     # Создаем начальную запись с 0 очками
     cursor.execute("INSERT INTO user_balance (balance) VALUES (0)")
         
     conn.commit()
+    cursor.close()
     conn.close()
