@@ -15,6 +15,8 @@ from aiogram.types import (
 )
 import requests
 from dotenv import load_dotenv
+from fastapi import FastAPI
+import uvicorn
 
 load_dotenv()
 
@@ -26,6 +28,16 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 ALLOWED_USER_IDS = [1890526567]
+
+app = FastAPI()
+
+@app.get("/")
+def health_check():
+    return {"status": "ok", "bot": "Cuteness Counter Bot is running"}
+
+@app.get("/healthz")
+def healthz_check():
+    return {"status": "ok"}
 
 def admin_only(handler):
     """Декоратор проверки прав: если пользователя нет в списке, шлем заглушку"""
@@ -152,11 +164,18 @@ async def cmd_reset(message: types.Message):
         await message.answer("⏳ Сервер на Render просыпается. Повтори запрос еще раз.")
 
 
-async def main():
+async def start_telegram_bot():
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     print("🤖 Бот запущен и ждет команд...")
     await dp.start_polling(bot)
 
 
+@app.on_event("startup")
+async def startup_event():
+    """При старте FastAPI сервера параллельно запускаем Telegram-бота"""
+    asyncio.create_task(start_telegram_bot())
+
+    
 if __name__ == "__main__":
-    asyncio.run(main())
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
