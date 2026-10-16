@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from server.database import init_db, get_current_state, add_points
 from server.database import init_db, get_current_state, add_points, reset_database
+from fastapi.responses import PlainTextResponse
 
 app = FastAPI()
 
@@ -25,6 +26,10 @@ class PointsRequest(BaseModel):
 @app.get("/api/state")
 def get_state():
     return get_current_state()
+
+@app.get("/healthz", response_class=PlainTextResponse)
+def healthz_check():
+    return "OK"
 
 @app.post("/api/add")
 def reward_points(data: PointsRequest):
