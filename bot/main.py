@@ -16,6 +16,7 @@ from aiogram.types import (
 import requests
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
 import uvicorn
 
 load_dotenv()
@@ -33,11 +34,11 @@ app = FastAPI()
 
 @app.get("/")
 def health_check():
-    return {"status": "ok", "bot": "Cuteness Counter Bot is running"}
-
-@app.get("/healthz")
-def healthz_check():
     return {"status": "ok"}
+
+@app.get("/healthz", response_class=PlainTextResponse)
+def healthz_check():
+    return "OK"
 
 def admin_only(handler):
     """Декоратор проверки прав: если пользователя нет в списке, шлем заглушку"""
