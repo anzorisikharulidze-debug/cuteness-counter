@@ -2,10 +2,10 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from ..filters.role_filters import IsAdmin, IsUser
-from ..keyboards.inline import get_guest_keyboard
-from ..keyboards.inline import get_user_keyboard
-from ..lexicon.ru import LEXICON_RU
+from filters.role_filters import IsAdmin, IsUser
+from keyboards.inline import get_guest_keyboard
+from keyboards.inline import get_user_keyboard
+from lexicon.ru import LEXICON_RU
 
 router: Router = Router(name="start_router")
 

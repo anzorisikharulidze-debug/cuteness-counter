@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
-from ..lexicon.ru import LEXICON_RU
+from lexicon.ru import LEXICON_RU
 
 def get_guest_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(

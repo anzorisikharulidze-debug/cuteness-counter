@@ -3,9 +3,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
-from ...keyboards.inline import get_contact_cancel_keyboard
-from ...lexicon.ru import LEXICON_RU
-from ...config import ADMIN_ID
+from keyboards.inline import get_contact_cancel_keyboard
+from lexicon.ru import LEXICON_RU
+from config import ADMIN_ID
 
 router: Router = Router(name="contact_dev_router")
 

@@ -3,8 +3,8 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery
 import httpx
 
-from ...config import BACKEND_URL
-from ...lexicon.ru import LEXICON_RU
+from config import BACKEND_URL
+from lexicon.ru import LEXICON_RU
 
 router: Router = Router(name="request_access_router")
 
