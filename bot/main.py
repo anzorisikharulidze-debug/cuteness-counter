@@ -9,10 +9,10 @@ from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
 import uvicorn
 
-from . import config
-from .handlers import start
-from bot.handlers.guest import request_access
-from bot.handlers.guest.contact_dev import router as contact_dev_router
+import config
+from handlers import start
+from handlers.guest import request_access
+from handlers.guest.contact_dev import router as contact_dev_router
 
 bot = Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
