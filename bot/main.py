@@ -13,6 +13,7 @@ import config
 from handlers import start
 from handlers.guest import request_access
 from handlers.guest.contact_dev import router as contact_dev_router
+from admin_commands import router as admin_commands_router
 
 bot = Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
@@ -21,6 +22,8 @@ dp = Dispatcher()
 dp.include_router(start.router)
 dp.include_router(request_access.router)
 dp.include_router(contact_dev_router)
+
+dp.include_router(admin_commands_router)
 
 app = FastAPI()
 
