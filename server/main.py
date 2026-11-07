@@ -1,8 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from server.database import init_db, get_current_state, add_points
-from server.database import init_db, get_current_state, add_points, reset_database
+from server.database import (
+    init_db, 
+    get_current_state, 
+    add_points, 
+    reset_database,
+    request_user_access
+)
 from fastapi.responses import PlainTextResponse
 
 app = FastAPI()
@@ -22,6 +27,12 @@ init_db()
 class PointsRequest(BaseModel):
     points: int
     reason: str
+
+class AccessRequestModel(BaseModel):
+    user_id: int
+    username: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
 
 @app.get("/api/state")
 def get_state():
@@ -44,3 +55,13 @@ def reset_counter():
         return {"status": "success", "message": "База данных успешно сброшена", "new_balance": 0}
     except Exception as e:
         return {"status": "error", "message": str(e)}, 500
+
+@app.post("/api/access/request")
+def api_request_access(data: AccessRequestModel):
+    status = request_user_access(
+        user_id=data.user_id,
+        username=data.username,
+        first_name=data.first_name,
+        last_name=data.last_name
+    )
+    return {"status": status}

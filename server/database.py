@@ -36,6 +36,16 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS access_requests (
+            user_id BIGINT PRIMARY KEY,
+            username TEXT,
+            first_name TEXT,
+            last_name TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     
     # Создаем начальную запись с 0 очками, если база пустая
     cursor.execute("SELECT COUNT(*) FROM user_balance")
@@ -97,3 +107,29 @@ def reset_database():
     conn.commit()
     cursor.close()
     conn.close()
+
+
+# Проверка и добавление запроса доступа
+def request_user_access(user_id: int, username: str | None, first_name: str | None, last_name: str | None) -> str:
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # Проверяем, существует ли уже запрос от этого пользователя
+    cursor.execute("SELECT user_id FROM access_requests WHERE user_id = %s", (user_id,))
+    if cursor.fetchone():
+        cursor.close()
+        conn.close()
+        return "exists"
+    
+    # Если нет — записываем новый запрос
+    cursor.execute(
+        """
+        INSERT INTO access_requests (user_id, username, first_name, last_name)
+        VALUES (%s, %s, %s, %s)
+        """,
+        (user_id, username, first_name, last_name)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return "success"
