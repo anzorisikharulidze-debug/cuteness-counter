@@ -5,6 +5,9 @@ from aiogram import Router, types
 from aiogram.filters import Command
 from dotenv import load_dotenv
 
+import config
+from lexicon.ru import LEXICON_RU
+
 load_dotenv()
 
 router = Router(name="admin_commands_router")
@@ -63,6 +66,19 @@ async def cmd_add(message: types.Message):
             f"✅ Успешно начислено: `+{points}` очков!\n💬 Причина: *{reason}*\n📊 Новый баланс: *{new_balance}*",
             parse_mode="Markdown",
         )
+
+        # 3. Отправляем красивое интригующее уведомление пользователю
+        if config.USER_ID:
+            notification_text = LEXICON_RU["points_added_notification"].format(
+                points=points,
+                reason=reason
+            )
+            await message.bot.send_message(
+                chat_id=config.USER_ID,
+                text=notification_text,
+                parse_mode="HTML"
+            )
+
     except httpx.HTTPStatusError as e:
         await message.answer(f"❌ Ошибка бэкенда: статус {e.response.status_code}")
     except httpx.RequestError:

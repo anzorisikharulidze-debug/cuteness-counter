@@ -25,6 +25,12 @@ LEXICON_RU: Final[dict[str, str]] = {
         "Пользуйся, наслаждайся, люблю тебя! 😜"
     ),
     "btn_open_app": "🐾 Открыть Cuteness Counter",
+    
+    "points_added_notification": (
+        "🎉 <b>Бум! +{points} милоты на баланс!</b> 🎁\n"
+        "Причина: <i>{reason}</i> 🐾\n\n"
+        "Скорее заходи в приложение и проверяй свой новый баланс! ✨"
+    ),
 
 
     "start_admin": ("⚙️ <b>Панель администратора</b>"
