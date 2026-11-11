@@ -15,7 +15,7 @@ export class CutenessHistory extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this._fetchHistory();
+    this._fetchTransactions();
   }
 
   async _fetchTransactions() {
