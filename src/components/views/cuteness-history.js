@@ -44,7 +44,7 @@ export class CutenessHistory extends LitElement {
       height: 100%;
       box-sizing: border-box;
       padding: 16px;
-      margin-top: 30px;
+      margin-top: 50px;
     }
 
     /* Обертка — держит вьюпорт и выносит скроллбар максимально вправо */
