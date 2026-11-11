@@ -6,7 +6,8 @@ from server.database import (
     get_current_state, 
     add_points, 
     reset_database,
-    request_user_access
+    request_user_access,
+    get_transactions_history
 )
 from fastapi.responses import PlainTextResponse
 
@@ -65,3 +66,7 @@ def api_request_access(data: AccessRequestModel):
         last_name=data.last_name
     )
     return {"status": status}
+
+@app.get("/api/transactions")
+def get_transactions():
+    return get_transactions_history()

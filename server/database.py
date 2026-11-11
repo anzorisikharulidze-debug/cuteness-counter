@@ -133,3 +133,18 @@ def request_user_access(user_id: int, username: str | None, first_name: str | No
     cursor.close()
     conn.close()
     return "success"
+
+def get_transactions_history():
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # Забираем только транзакции из отдельной таблицы
+    cursor.execute("SELECT points, reason, created_at FROM transactions ORDER BY created_at DESC")
+    history = [
+        {"points": r[0], "reason": r[1], "created_at": r[2].isoformat() if r[2] else None} 
+        for r in cursor.fetchall()
+    ]
+    
+    cursor.close()
+    conn.close()
+    return history
