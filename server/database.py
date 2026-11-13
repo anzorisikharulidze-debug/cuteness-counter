@@ -46,6 +46,20 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
+    task_tables = ["tasks", "adult_tasks"]
+    for table in task_tables:
+        cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                reward INTEGER NOT NULL,
+                completed BOOLEAN NOT NULL DEFAULT FALSE,
+                is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                cooldown_until TIMESTAMP
+            )
+        """)
     
     # Создаем начальную запись с 0 очками, если база пустая
     cursor.execute("SELECT COUNT(*) FROM user_balance")
@@ -148,3 +162,27 @@ def get_transactions_history():
     cursor.close()
     conn.close()
     return history
+
+def get_tasks(is_adult: bool = False):
+    """Получает список всех заданий из нужной таблицы"""
+    table = "adult_tasks" if is_adult else "tasks"
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(f"SELECT id, title, reward, completed, is_active, created_at, cooldown_until FROM {table} ORDER BY id ASC")
+    tasks = [
+        {
+            "id": r[0],
+            "title": r[1],
+            "reward": r[2],
+            "completed": r[3],
+            "is_active": r[4],
+            "created_at": r[5].isoformat() if r[5] else None,
+            "cooldown_until": r[6].isoformat() if r[6] else None
+        }
+        for r in cursor.fetchall()
+    ]
+    
+    cursor.close()
+    conn.close()
+    return tasks

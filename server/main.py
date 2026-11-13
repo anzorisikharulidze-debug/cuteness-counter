@@ -7,7 +7,8 @@ from server.database import (
     add_points, 
     reset_database,
     request_user_access,
-    get_transactions_history
+    get_transactions_history,
+    get_tasks
 )
 from fastapi.responses import PlainTextResponse
 
@@ -70,3 +71,19 @@ def api_request_access(data: AccessRequestModel):
 @app.get("/api/transactions")
 def get_transactions():
     return get_transactions_history()
+
+@app.get("/api/tasks")
+def get_regular_tasks():
+    """Эндпоинт для получения обычных заданий"""
+    try:
+        return get_tasks(is_adult=False)
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
+
+@app.get("/api/adult-tasks")
+def get_adult_tasks():
+    """Эндпоинт для получения adult-заданий"""
+    try:
+        return get_tasks(is_adult=True)
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500

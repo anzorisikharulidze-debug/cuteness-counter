@@ -5,6 +5,8 @@ import './components/cuteness-divider.js';
 
 import './components/nav/cuteness-navbar.js';
 import './components/views/cuteness-history.js';
+import './components/tasks/cuteness-task-btn.js';
+import './components/views/cuteness-tasks.js';
 
 export class AppRoot extends LitElement {
   static properties = {
@@ -36,6 +38,13 @@ export class AppRoot extends LitElement {
 
   _handleTabChange(e) {
     this.activeIndex = e.detail.index;
+  }
+
+  _handleOpenTasks() {
+    const tasksView = this.shadowRoot.querySelector('cuteness-tasks-view');
+    if (tasksView) {
+      tasksView.openMainDialog();
+    }
   }
 
   static styles = css`
@@ -77,6 +86,7 @@ export class AppRoot extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
+      margin-top: 70px;
     }
 
     .heart-wrapper {
@@ -139,6 +149,13 @@ export class AppRoot extends LitElement {
       max-width: 140px;
       z-index: 100;
     }
+
+    .top-right-actions {
+      position: absolute;
+      top: 30px;
+      right: 20px;
+      z-index: 10;
+    }
   `;
 
   render() {
@@ -148,6 +165,11 @@ export class AppRoot extends LitElement {
         
         <!-- Панель 0: Счётчик -->
         <div class="screen-pane">
+
+          <div class="top-right-actions">
+            <cuteness-task-btn @open-tasks="${this._handleOpenTasks}"></cuteness-task-btn>
+          </div>
+
           <div class="card-container">
             <cuteness-card>
               <div class="heart-wrapper">
@@ -175,6 +197,8 @@ export class AppRoot extends LitElement {
         <!-- Слушаем кастомное событие смены таба от навбара -->
         <cuteness-navbar @tab-change="${this._handleTabChange}"></cuteness-navbar>
       </div>
+
+      <cuteness-tasks-view></cuteness-tasks-view>
     `;
   }
 }
