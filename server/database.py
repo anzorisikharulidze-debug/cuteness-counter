@@ -186,3 +186,90 @@ def get_tasks(is_adult: bool = False):
     cursor.close()
     conn.close()
     return tasks
+
+def add_task(title: str, reward: int, is_adult: bool = False):
+    """Создает новое задание с дефолтными значениями"""
+    table = "adult_tasks" if is_adult else "tasks"
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        f"INSERT INTO {table} (title, reward, completed, is_active) VALUES (%s, %s, FALSE, TRUE)",
+        (title, reward)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+def toggle_task_status(task_id: int, is_adult: bool = False):
+    """
+    Инвертирует статус задания (completed: true <-> false).
+    Если задание снова становится активным, сбрасываем cooldown_until в NULL.
+    """
+    table = "adult_tasks" if is_adult else "tasks"
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # Сначала узнаем текущий статус
+    cursor.execute(f"SELECT completed FROM {table} WHERE id = %s", (task_id,))
+    row = cursor.fetchone()
+    if not row:
+        cursor.close()
+        conn.close()
+        raise ValueError("Задание не найдено")
+    
+    current_status = row[0]
+    new_status = not current_status
+    
+    # Если делаем выполненным — можно ставить кулдаун, если невыполненным — сбрасывать
+    if new_status:
+        cursor.execute(
+            f"""
+            UPDATE {table} 
+            SET completed = TRUE, 
+                cooldown_until = CURRENT_TIMESTAMP + INTERVAL '23 hours' 
+            WHERE id = %s
+            """,
+            (task_id,)
+        )
+    else:
+        cursor.execute(
+            f"""
+            UPDATE {table} 
+            SET completed = FALSE, 
+                cooldown_until = NULL 
+            WHERE id = %s
+            """,
+            (task_id,)
+        )
+        
+    conn.commit()
+    
+    # Забираем обновленное задание, чтобы вернуть его
+    cursor.execute(f"SELECT id, title, reward, completed, is_active, created_at, cooldown_until FROM {table} WHERE id = %s", (task_id,))
+    r = cursor.fetchone()
+    updated_task = {
+        "id": r[0],
+        "title": r[1],
+        "reward": r[2],
+        "completed": r[3],
+        "is_active": r[4],
+        "created_at": r[5].isoformat() if r[5] else None,
+        "cooldown_until": r[6].isoformat() if r[6] else None
+    }
+    
+    cursor.close()
+    conn.close()
+    return updated_task
+
+def reset_tasks_table(is_adult: bool = False):
+    """Очищает и сбрасывает автоинкремент конкретной таблицы задач"""
+    table = "adult_tasks" if is_adult else "tasks"
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(f"TRUNCATE TABLE {table} RESTART IDENTITY CASCADE;")
+    
+    conn.commit()
+    cursor.close()
+    conn.close()

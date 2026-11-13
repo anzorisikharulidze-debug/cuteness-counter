@@ -8,7 +8,10 @@ from server.database import (
     reset_database,
     request_user_access,
     get_transactions_history,
-    get_tasks
+    get_tasks,
+    add_task,
+    toggle_task_status,
+    reset_tasks_table,
 )
 from fastapi.responses import PlainTextResponse
 
@@ -85,5 +88,63 @@ def get_adult_tasks():
     """Эндпоинт для получения adult-заданий"""
     try:
         return get_tasks(is_adult=True)
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
+
+class TaskCreateRequest(BaseModel):
+    title: str
+    reward: int
+
+@app.post("/api/tasks")
+def create_regular_task(data: TaskCreateRequest):
+    """Создание обычного задания"""
+    try:
+        add_task(data.title, data.reward, is_adult=False)
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
+
+@app.post("/api/adult-tasks")
+def create_adult_task(data: TaskCreateRequest):
+    """Создание adult-задания"""
+    try:
+        add_task(data.title, data.reward, is_adult=True)
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
+
+@app.patch("/api/tasks/{task_id}/toggle")
+def toggle_regular_task(task_id: int):
+    """Переключение статуса обычного задания"""
+    try:
+        updated = toggle_task_status(task_id, is_adult=False)
+        return updated
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
+
+@app.patch("/api/adult-tasks/{task_id}/toggle")
+def toggle_adult_task(task_id: int):
+    """Переключение статуса adult-задания"""
+    try:
+        updated = toggle_task_status(task_id, is_adult=True)
+        return updated
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
+
+@app.post("/api/tasks/reset")
+def reset_regular_tasks():
+    """Сброс таблицы обычных заданий"""
+    try:
+        reset_tasks_table(is_adult=False)
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
+
+@app.post("/api/adult-tasks/reset")
+def reset_adult_tasks():
+    """Сброс таблицы adult-заданий"""
+    try:
+        reset_tasks_table(is_adult=True)
+        return {"status": "success"}
     except Exception as e:
         return {"status": "error", "message": str(e)}, 500
